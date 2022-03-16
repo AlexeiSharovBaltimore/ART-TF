@@ -49,10 +49,9 @@ public-ART-TF_taergets_hg19_enhancers_add and public-ART-TF_taergets_hg19_promot
 based on distal binding sites and proximal binding sites, respectively. ExAtlas is a software for meta-analysis
 of gene expression data. Besides standard statistical analysis of gene expression (similar to NIA Array Analysis) 
 it supports several methods for meta-analysis and generates results for all combinations of data in 
-multi-component data sets (e.g., all gene expression profiles vs. all GO annotations). ExAtlas is available 
-at http://webtools.systemsmedicine.jp/exatlas and the code can be accessed at 
-https://github.com/AlexeiSharovBaltimore/ExAtlas. Users can register to create their own worlspace in ExAtlas 
-or use it as visitors without registration if they click button "Start using ExAtlas". Then, to access 
+multi-component data sets (e.g., all gene expression profiles vs. all GO annotations). ExAtlas demo is available 
+at http://alexei.nfshost.com/exatlas/ (Full installation of ExAtlas: http://webtools.systemsmedicine.jp/exatlas/) and the code can be accessed at 
+https://github.com/AlexeiSharovBaltimore/ExAtlas. To enter as guest, click button "Start using ExAtlas". Then, to access 
 ART-TF data, users need to select organism species by clicking the pull-down menu "Select organism" shown by blue 
 arrow at the top of the screen. Please, select "Human (Homo sapiens)".
 
@@ -65,11 +64,6 @@ and check the box "Use gene attributes". This checkbox is needed to instruct the
 in our case is the score of TF binding to enhancer(s) of each target gene. Also check another checkbox "Identify 
 associated genes", and then click the button "Geneset analysis". The analysis may take 25-30 minutes; click button
 "Check your task" when it is available; also you can click in "Log file" to see the progression.
-The results of analysis may slightly differ from the paper published in BMC Bioinformatics because of recurrent 
-updates of gene symbols in ExAtlas. Original results (identical to published)
-are available in ExAtlas in section "Output files" (3rd line in the main menu); the data set is named 
-"public-ART-TF_regulated_targets_EPFP03_add_far". The file with regulated targets based on promoter binding 
-(proximal binding sites) is generated in a similar way.
 
 4. parse_targets.pl
 
