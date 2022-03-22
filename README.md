@@ -95,18 +95,26 @@ downloaded from ExAtlas and named "TF_regulated_targets_EPFP03_add_far.txt" (for
 Output file TF_regul_targets_add_far.txt specifies gene symbols for regulated target genes generated from individual
 ChIP-seq experiments and one attribute: EPFP (expected proportion of false positives). 
 
+Geneset file format: it is a tab-delimited text file. In the simplest case, each line specifies one geneset, where
+first position is geneset name, second position is description, then follows a list of genesymbols (tab delimited).
+A geneset file can also specify attributes (e.g., gene score, p-value, or expression). Each attribute occupies
+a line after the line with a list of gene symbols. Such a line has emply pirst position (to distinguish it
+from the list of genes. The second position is the name of attribute, then follow attribute values for all
+genes in the geneset (tab delimited). All genesets in a file should have the same attributes.
+
 6. target_overlap_v2.pl
 
-Syntax: target_overlap.pl TF_regul_targets_add_far.txt ndata_chip.txt target_overlap_add_far.txt
+Syntax: target_overlap_v2.pl TF_regul_targets_add_far.txt ndata_chip.txt target_overlap_add_far.txt
 
-Syntax: target_overlap.pl TF_regul_targets_add_far.txt ndata_chip.txt TF_regul_targets_add_far_combined.txt -g
+Syntax: target_overlap_v2.pl TF_regul_targets_add_far.txt ndata_chip.txt TF_regul_targets_add_far_combined.txt -g
 
-Syntax: target_overlap.pl TF_regul_targets_add_near.txt ndata_chip.txt target_overlap_add_near.txt
+Syntax: target_overlap_v2.pl TF_regul_targets_add_near.txt ndata_chip.txt target_overlap_add_near.txt
 
-Syntax: target_overlap.pl TF_regul_targets_add_nrar.txt ndata_chip.txt TF_regul_targets_add_near_combined.txt -g
+Syntax: target_overlap_v2.pl TF_regul_targets_add_near.txt ndata_chip.txt TF_regul_targets_add_near_combined.txt -g
 
 Perl script to count overlapping regulated gene targets for pairs of gene sets obtained from different ChIP-seq
-experiments with the same TF gene. Input file TF_regul_targets_add_far.txt is generated at step 5; it is a list
+experiments with the same TF gene, and also to generate a file with combined genesets. 
+Input file TF_regul_targets_add_far.txt is generated at step 5; it is a list
 of genesets of reguilated targets of TFs. Second input file ndata_chip.txt is a text tab-delimited file with three
 columns: TF symbol, Ndata_all, and Ndata_direct. Ndata_all is the total number of ChIP-seq data that successfully 
 yielded some regulated targets for a TF; Ndata_direct is the number of non-surrogate ChIP-seq data (i.e., direct)
@@ -163,5 +171,13 @@ target gene expression change after TF induction; f) All regulated targets (incl
 g) All regulated targets: Number of supporting ChIP-seq data sets; h) All regulated targets: genome position (center); 
 i) Direct regulated targets (no surrogate ChIP-seq): EPFP; j) Direct regulated targets: Number of supporting ChIP-seq
 data sets; k) Direct regulated targets: genome position (center).
+
+11. geneset_match.pl
+
+Syntax: geneset_match.pl geneset1.txt geneset2.txt output.txt
+
+Perl program to compare genesets in files geneset1.txt and geneset2.txt (file format is in #5). The output is
+a tab-delimited table with 4 columns: (a) geneset name, (b) n genes in file1, (c) n genes in file2, and
+(d) n genes that match between file1 and file2.
 
 
