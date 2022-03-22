@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-#generate_table_targets_v2.pl regul_dir_targets_genesets_add.txt regul_all_targets_genesets_add.txt output.txt
+#generate_table_targets_v2.pl regul_dir_targets_genesets_add2022.txt regul_all_targets_genesets_add2022.txt output.txt
 
 use strict;
 my $usage = "$0 input output\n";
@@ -19,7 +19,7 @@ while(my $line = <INFO>){
 	if($line=~/^#/){ next; }
 	my($name,$junk,@genes)=split(/\t/, $line);
 	my ($TF,$dir) = split(/_/,$name);
-	$direct{$TF}++;
+	$direct{$name}++;
 	if($name && $name_old){
 		$geneset{$name_old} = [@data];
 		@data = ();
@@ -49,7 +49,7 @@ print OUT "# 9. Direct regulated targets (no surrogate ChIP-seq): EPFP\n";
 print OUT "# 10. Direct regulated targets: Number of supporting ChIP-seq data sets\n";
 print OUT "# 11. Direct regulated targets: genome position (center)\n";
 print OUT "# Abbreviations: N/S = no binding site or non-significant (EPFP>0.3); N/A = no ChIP-seq data\n";
-print OUT "TF_name\tDirection\tNum\tSymbol\tLog10-ratio\tDirect-EPFP\tDirect-nData\tDirect-position\tAll-EPFP\tAll-nData\tAll-position\n";
+print OUT "TF_name\tDirection\tNum\tSymbol\tLog10-ratio\tAll-EPFP\tAll-nData\tAll-position\tDirect-EPFP\tDirect-nData\tDirect-position\n";
 my $output_table;
 while(my $line = <INFO>){
 	$line =~ s/\n$//;
@@ -76,17 +76,12 @@ while(my $line = <INFO>){
 	for(my $i=0; $i<@genes; $i++){
 		my $num = $i+1;
 		print OUT "$TF\t$dir\t$num\t$genes[$i]\t$data1[2]->[$i]\t$data1[0]->[$i]\t$data1[1]->[$i]\t$data1[3]->[$i]";
-		if(!$direct{$TF}){
+		my $i1 = $hash{$genes[$i]};
+		if(!$direct{$TF."_".$dir} || !$i1){
 			print OUT "\tN/A\t0\tN/A\n";
 			next;
 		}
-		my $i1 = $hash{$genes[$i]};
-		if(!$i1){
-			print OUT "\tN/S\t$direct{$TF}\tN/S\n";
-			next;
-		}
-		$i1--;
-		print OUT "\t$data[1]->[$i1]\t$data[2]->[$i1]\t$data[4]->[$i1]\n";
+		print OUT "\t$data[1]->[$i1-1]\t$data[2]->[$i1-1]\t$data[4]->[$i1-1]\n";
 	}
 }
 close INFO;
