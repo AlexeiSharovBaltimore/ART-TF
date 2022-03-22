@@ -11,13 +11,15 @@ Syntax: combine_peaks_TFs.pl file_list.txt peaks_all.txt -TSS TSS_symbols_hg19.t
 Perl script to associate ChIP-seq peaks with genes and assemble data from many ChIP-seq experiments into a single file.
 File file_list.txt is input tab-delimited text file with first column containing names of ChIP-seq experiments, and
 second column containing file names of corresponding ChIP-seq results. Each ChIP-seq result file is a tab-delimited text file
-with 4 columns: chromosome, peak start position, peak end position, peak score. Chromosome is formatted as "chr1". File
+in bed format with 4 columns: chromosome, peak start position, peak end position, peak score. Chromosome is formatted as "chr1". File
 TSS_symbols_hg19.txt is a tab-delimited text file with 8 columns: gene symbol, chromosome (e.g., "chr1"), position of TSS,
 strand (0 = forward, 1 = reverse), length of transcript (mRNA), number of exons, and accession number/ID.
 
 2. generate_targets.pl
 
 Syntax: generate_targets.pl peaks_all.txt TF_targets_human_add_far.txt -o 1 -add
+
+Syntax: generate_targets.pl peaks_all.txt TF_targets_human_add_near.txt -o 2 -add
 
 Perl script to generate gene sets containing target genes for various transcription factors (TFs). 
 Input file peaks_all.txt is the output of program
@@ -40,12 +42,10 @@ as symbol quality multiplied by the binding score (ChIP-seq) and divided by the 
 "FAM", "MIR", "MRP", and "orf") and 3 for normal symbols. Genes with association scores <20% of the maximum value 
 (i.e., for the best matching gene) were not reported as associated with the given ChIP-seq peak. 
 
-3. finding regulated targets of TFs with ExAtlas
-
-The next step of the analysis is finding regulated targets of TFs; it is done using ExAtlas after gene 
+3. The next step of the analysis is finding regulated targets of TFs; it is done using ExAtlas after gene 
 sets of target genes are uploaded. You don't need to
 upload them again because these files are available in ExAtlas as public resources with the following names:
-public-ART-TF_taergets_hg19_enhancers_add and public-ART-TF_taergets_hg19_promoters_add, which specify traget genes
+public-ART-TF_targets_hg19_enhancers_add and public-ART-TF_targets_hg19_promoters_add, which specify target genes
 based on distal binding sites and proximal binding sites, respectively. ExAtlas is a software for meta-analysis
 of gene expression data. Besides standard statistical analysis of gene expression (similar to NIA Array Analysis) 
 it supports several methods for meta-analysis and generates results for all combinations of data in 
@@ -67,11 +67,11 @@ associated genes", and then click the button "Geneset analysis". The analysis ma
 
 4. parse_targets.pl
 
-Syntax: parse_targets.pl TF_regulated_targets_EPFP03_add_far.txt TF_regulated_targets_EPFP03_add_near.txt target_scores_add.txt -ind indirect_list_new.txt
+Syntax: parse_targets.pl TF_regulated_targets_EPFP03_add_far.txt TF_regulated_targets_EPFP03_add_near.txt target_scores_add.txt -ind indirect_list.txt
 
 Perl script to parse output files with regulated gene targets (see step #3) downloaded from ExAtlas and named 
 "TF_regulated_targets_EPFP03_add_far.txt" (for enhancers) and "TF_regulated_targets_EPFP03_add_near.txt" (for promoters).
-Option " -ind indirect_list_new.txt" is needed to supply the program with a file that specifies acceptable surrogate TFs
+Option " -ind indirect_list.txt" is needed to supply the program with a file that specifies acceptable surrogate TFs
 so that ChIP-seq surrogate data can be used in case there is no ChIP-seq data for some induced TF. Surrogate ChIP-seq data
 also makes lists of regulated target genes more complete to increase their explanatoiry power.
 The output file target_scores_add.txt is a tab-delimited text file with 11 columns: (a) ChIP-seq data name, (b) Induced TF,
@@ -85,31 +85,44 @@ downregulated target genes with promoter binding.
 
 5. output2targets.pl
 
-Syntax: output2targets.pl TF_regulated_targets_EPFP03_add_far.txt TF_regul_targets_add_far.txt -ind indirect_list_new.txt
+Syntax: output2targets.pl TF_regulated_targets_EPFP03_add_far.txt TF_regul_targets_add_far.txt -ind indirect_list.txt
+
+Syntax: output2targets.pl TF_regulated_targets_EPFP03_add_near.txt TF_regul_targets_add_near.txt -ind indirect_list.txt
 
 Perl script to extract gene sets of regulated gene targets from output files with regulated gene targets (see step #3)
 downloaded from ExAtlas and named "TF_regulated_targets_EPFP03_add_far.txt" (for enhancers). Option 
-" -ind indirect_list_new.txt" is needed to supply the program with a file that specifies acceptable surrogate TFs.
+" -ind indirect_list.txt" is needed to supply the program with a file that specifies acceptable surrogate TFs.
 Output file TF_regul_targets_add_far.txt specifies gene symbols for regulated target genes generated from individual
 ChIP-seq experiments and one attribute: EPFP (expected proportion of false positives). 
 
-6. target_overlap.pl
+6. target_overlap_v2.pl
 
-Syntax: target_overlap.pl TF_regul_targets_add_far2021.txt target_overlap_add_far.txt
+Syntax: target_overlap.pl TF_regul_targets_add_far.txt ndata_chip.txt target_overlap_add_far.txt
 
-Syntax: target_overlap.pl TF_regul_targets_add_far2021.txt TF_regul_targets_add_far_combined.txt -g
+Syntax: target_overlap.pl TF_regul_targets_add_far.txt ndata_chip.txt TF_regul_targets_add_far_combined.txt -g
+
+Syntax: target_overlap.pl TF_regul_targets_add_near.txt ndata_chip.txt target_overlap_add_near.txt
+
+Syntax: target_overlap.pl TF_regul_targets_add_nrar.txt ndata_chip.txt TF_regul_targets_add_near_combined.txt -g
 
 Perl script to count overlapping regulated gene targets for pairs of gene sets obtained from different ChIP-seq
-experiments with the same TF gene. If option "-g" is added at the end, then the program generates combined gene sets
-of regulated target genes from multiple ChIP-seq experiments with the same TF gene. For each TF, 4 gene sets can be
+experiments with the same TF gene. Input file TF_regul_targets_add_far.txt is generated at step 5; it is a list
+of genesets of reguilated targets of TFs. Second input file ndata_chip.txt is a text tab-delimited file with three
+columns: TF symbol, Ndata_all, and Ndata_direct. Ndata_all is the total number of ChIP-seq data that successfully 
+yielded some regulated targets for a TF; Ndata_direct is the number of non-surrogate ChIP-seq data (i.e., direct)
+that yielded some regulated targets for a TF.
+
+If option "-g" is added at the end, then the program generates combined gene sets
+of regulated target genes from multiple ChIP-seq experiments with the same TF gene. For each TF, up to 4 gene sets can be
 generated: upregulated direct targets, downregulated direct targets, upregulated indirect targets, and downregulated
-indirect targets. Two attributes are: smallest EPFP among ChIP-seq data sets, and the number of ChIP-seq data sets that
+indirect targets. Two attributes for target genes are generated: smallest EPFP among ChIP-seq data sets, 
+and the number of ChIP-seq data sets that
 support each regulated target gene. If 3 or more ChIP-seq data sets are available for a TF, then regulated target 
-genes suported by a signle ChIUP-seq data set are not included into a combined gene set of regulated targets.
+genes suported by a signle ChIP-seq data set are not included into a combined gene set of regulated targets.
 
 7. compare_indirect_direct.pl
 
-Syntax: compare_indirect_direct.pl target_overlap_add_far2021.txt freq_indirect_direct_far2021.txt
+Syntax: compare_indirect_direct.pl target_overlap_add_far.txt freq_indirect_direct_far.txt
 
 Perl script to compare the quality of direct and indirect regulated targets. The significance of overlap between sets 
 of direct and indirect regulated targets for the same TF was quantified by the hyporgeometric test (z-value). The 
@@ -119,21 +132,21 @@ distribution of z-values.
 
 8. target_far_near_new.pl
 
-Syntax: target_far_near_new.pl TF_regul_targets_add_far_combined2021.txt TF_regul_targets_add_near_combined2021.txt regul_targets_table_add_2021.txt
+Syntax: target_far_near_new.pl TF_regul_targets_add_far_combined.txt TF_regul_targets_add_near_combined.txt regul_targets_table_add.txt
 
-Syntax: target_far_near_new.pl TF_regul_targets_add_far_combined2021.txt TF_regul_targets_add_near_combined2021.txt regul_all_targets_genesets_add.txt -gall -anova anova-TFs_Sep2018_all.txt -coord TF_targets_human_add_far2018.txt TF_targets_human_add_near2018.txt -indir indirect_list_new.txt
+Syntax: target_far_near_new.pl TF_regul_targets_add_far_combined.txt TF_regul_targets_add_near_combined.txt regul_all_targets_genesets_add.txt -gall -anova anova-TFs_Sep2018_all.txt -coord TF_targets_human_add_far.txt TF_targets_human_add_near.txt -indir indirect_list.txt
 
 Perl script to generate a table of varyoius categories of regulated gene counts: upregulated and downregulated, direct and indirect,
-bound by TFs in enhancers or prtomoters or both, and significantly changed expression (>2 fold and FDR<0.05). Options "-gall",
-"-gdir", and "-gind" are used to generate a file with genesets of regulated targtes supported by all ChIP-seq data, non-surrogate
-ChIP-seq data, and surrogate ChIP-seq data, respectively. These gene sets are characterized by the following attributes:
+bound by TFs in enhancers or prtomoters or both. Options "-gall" and "-gdir" are used to generate a file
+with genesets of regulated targtes supported by all ChIP-seq data or only by non-surrogate
+ChIP-seq data (direct), respectively. These gene sets are characterized by the following attributes:
 (a) smallest EPFP, (b) average logratio (log10) of gene expression channge after induction of the TF, (c) counts of ChIP-seq
 data sets supporting the target gene. and (d) genome position of the best binding site of the TF (hg19) or a pair of binding sites
 one in enhancer and another in promoter.
 
 9. count_2fold_targets.pl
 
-Syntax: count_2fold_targets.pl regul_all_targets_genesets_add.txt signif_Nov2017_2fold_MedEmerCag_genesets.txt regul_all_targets_2fold.txt
+Syntax: count_2fold_targets.pl regul_all_targets_genesets_add.txt signif_Nov2018_2fold_MedEmerCag_genesets.txt regul_all_targets_2fold.txt
 
 Perl script to generate genesets of regulated targets that also show signiuficant change of expression (>2 fold & FDR<0.05)
 in ES cells after induction of corresponding TFs. Both input files and the output file (regul_all_targets_2fold.txt) are
